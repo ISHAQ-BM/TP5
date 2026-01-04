@@ -1,7 +1,8 @@
 plugins {
     id 'java'
     id 'jacoco'
-    //id 'org.sonarqube' version '4.4.1.3373'
+    // أعد تفعيل السونار لأنه مطلوب في الـ TP
+    id 'org.sonarqube' version '4.4.1.3373'
     id 'maven-publish'
 }
 
@@ -10,23 +11,26 @@ version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
 }
-
 dependencies {
-    // Cucumber & JUnit
-    //testImplementation 'io.cucumber:cucumber-java:6.0.0'
-    //testImplementation 'io.cucumber:cucumber-junit:6.0.0'
-    testImplementation 'junit:junit:4.12'
+    // مكتبات Cucumber الأساسية (تم تصحيح الإصدارات)
+    // بدلاً من التحميل من الإنترنت، نستخدم الملف المحلي
+    testImplementation files('libs/cucumber-java-6.0.0.jar')
+    testImplementation files('libs/cucumber-junit-6.0.0.jar')
+    testImplementation files('libs/datatable-3.3.1.jar')
+    testImplementation files('libs/cucumber-core-6.0.0.jar')
+    testImplementation files('libs/cucumber-gherkin-6.0.0.jar')
+    testImplementation files('libs/cucumber-expressions-10.2.0.jar')
+
+    // JUnit ضروري جداً لتشغيل الاختبارات
+    testImplementation 'junit:junit:4.13.2'
+
+    // إذا كان الكود يستخدم Apache Math (للمصفوفات مثلاً)
+    implementation 'org.apache.commons:commons-math3:3.6.1'
 }
 
-// Cucumber report
-//cucumberReports {
-  //  outputDir = file('build/reports/cucumber/html')
-    //buildId = '1'
-    //reports = files('build/reports/cucumber/cucumber.json')
-//}
-
-// Jacoco
+// إعدادات Jacoco (مطلوب لتقارير تغطية الكود في Sonar)
 jacoco {
     toolVersion = "0.8.12"
 }
@@ -39,25 +43,25 @@ jacocoTestReport {
     }
 }
 
+// إعدادات SonarQube (أعد تفعيلها لربطها بـ Jenkins)
+sonar {
+    properties {
+        property "sonar.host.url", "http://localhost:9000"
+        property "sonar.projectKey", "TP5"
+        property "sonar.projectName", "TP5"
+        // إخبار سونار بمكان تقارير Jacoco
+        property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+    }
+}
 
+// إعدادات الاختبار لإنتاج ملف JSON الخاص بـ Cucumber
+test {
+    useJUnit() // التأكد من استخدام JUnit 4
+    systemProperty "cucumber.options", "--plugin json:build/reports/cucumber/cucumber.json"
+    finalizedBy jacocoTestReport // تشغيل Jacoco تلقائياً بعد الاختبار
+}
 
-// SonarQube
-//sonar {
-    //properties {
-    //    property "sonar.host.url", "http://localhost:9000"
-  //  }
-//}
-
-//tasks.named('sonarqube') {
-  //  dependsOn test
-//}
-
-// Gradle test configuration
-//test {
-  //  systemProperty "cucumber.plugin", "pretty, json:build/reports/cucumber/cucumber.json"
-//}
-
-// Maven publishing
+// إعدادات النشر إلى MyMavenRepo (مطلوبة في مرحلة Deploy)
 publishing {
     publications {
         maven(MavenPublication) {
@@ -69,8 +73,8 @@ publishing {
     }
     repositories {
         maven {
-            url "http://mymavenrepo.com/repo/cEmjfkxugPlzLxXg1A2B/"
-            allowInsecureProtocol = true
+            // ملاحظة: تأكد أن الرابط يبدأ بـ https إذا كان يدعمه، أو ابقه هكذا مع السماح بالبروتوكول غير الآمن
+            url "https://mymavenrepo.com/repo/cEmjfkxugPlzLxXg1A2B/"
             credentials {
                 username = "myMavenRepo"
                 password = "test0005"
