@@ -35,8 +35,13 @@ pipeline {
 
         stage('Test') {
             steps {
-                bat 'gradlew.bat test'  // Only 'test', no separate cucumber task
-                junit '**/build/test-results/test/*.xml'
+                bat 'gradlew.bat test jacocoTestReport'
+            }
+            post {
+                always {
+                    // المسار الصحيح لنتائج اختبارات Gradle
+                    junit 'build/test-results/test/*.xml'
+                }
             }
         }
 
