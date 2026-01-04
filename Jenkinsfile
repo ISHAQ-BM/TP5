@@ -41,7 +41,7 @@ pipeline {
                     post {
                         always {
                             // العلامة **/ تعني ابحث في كل المجلدات الفرعية داخل الـ Workspace
-                            junit testResults: '**/build/test-results/**/*.xml', allowEmptyResults: true
+                           junit testResults: '**/build/test-results/test/*.xml', allowEmptyResults: true
                         }
                     }
                 }

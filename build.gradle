@@ -47,18 +47,19 @@ sonar {
 }
 
 // إعدادات الاختبار لإنتاج ملف JSON الخاص بـ Cucumber
-test {
-    useJUnit()
-    // إجبار Gradle على اعتبار التست دائماً "غير محدث" لتوليد التقارير في كل مرة
-    outputs.upToDateWhen { false }
-}
+
 
 jacocoTestReport {
+    dependsOn test
     reports {
-        xml.required = true // هذا الملف هو ما يحتاجه SonarQube
-        csv.required = false
-        html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
+        xml.required = true // ضروري جداً لـ SonarQube
+        html.required = true
     }
+}
+
+test {
+    // إجبار توليد التقارير في كل بناء
+    outputs.upToDateWhen { false }
 }
 
 // إعدادات النشر إلى MyMavenRepo (مطلوبة في مرحلة Deploy)
