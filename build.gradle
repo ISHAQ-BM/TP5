@@ -1,0 +1,79 @@
+plugins {
+    id 'java'
+    id "com.github.spacialcircumstances.gradle-cucumber-reporting" version "0.1.25"
+    id 'jacoco'
+    id 'org.sonarqube' version '4.4.1.3373'
+    id 'maven-publish'
+}
+
+group = 'com.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Cucumber & JUnit
+    testImplementation 'io.cucumber:cucumber-java:6.0.0'
+    testImplementation 'io.cucumber:cucumber-junit:6.0.0'
+    testImplementation 'junit:junit:4.12'
+}
+
+// Cucumber report
+cucumberReports {
+    outputDir = file('build/reports/cucumber/html')
+    buildId = '1'
+    reports = files('build/reports/cucumber/cucumber.json')
+}
+
+// Jacoco
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+// SonarQube
+sonar {
+    properties {
+        property "sonar.host.url", "http://localhost:9000"
+    }
+}
+
+tasks.named('sonarqube') {
+    dependsOn test
+}
+
+// Gradle test configuration
+test {
+    systemProperty "cucumber.plugin", "pretty, json:build/reports/cucumber/cucumber.json"
+}
+
+// Maven publishing
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            groupId = 'BelhadjMehdi'
+            artifactId = 'TP5'
+            version = '1.0-SNAPSHOT'
+        }
+    }
+    repositories {
+        maven {
+            url "http://mymavenrepo.com/repo/cEmjfkxugPlzLxXg1A2B/"
+            allowInsecureProtocol = true
+            credentials {
+                username = "myMavenRepo"
+                password = "test0005"
+            }
+        }
+    }
+}
