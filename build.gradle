@@ -33,13 +33,7 @@ jacoco {
     toolVersion = "0.8.12"
 }
 
-jacocoTestReport {
-    dependsOn test
-    reports {
-        xml.required = true
-        html.required = true
-    }
-}
+
 
 // إعدادات SonarQube (أعد تفعيلها لربطها بـ Jenkins)
 sonar {
@@ -54,19 +48,17 @@ sonar {
 
 // إعدادات الاختبار لإنتاج ملف JSON الخاص بـ Cucumber
 test {
-    useJUnit() // for JUnit 4
+    useJUnit()
+    // إجبار Gradle على اعتبار التست دائماً "غير محدث" لتوليد التقارير في كل مرة
+    outputs.upToDateWhen { false }
+}
 
-    // Enable reports in Gradle 8+ syntax
+jacocoTestReport {
     reports {
-        junitXml.required.set(true)
-        html.required.set(true)
+        xml.required = true // هذا الملف هو ما يحتاجه SonarQube
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
     }
-
-    // Optional: Cucumber JSON
-    systemProperty "cucumber.options", "--plugin json:build/reports/cucumber/cucumber.json"
-
-    // Run Jacoco after tests
-    finalizedBy jacocoTestReport
 }
 
 // إعدادات النشر إلى MyMavenRepo (مطلوبة في مرحلة Deploy)
