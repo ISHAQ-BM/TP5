@@ -20,11 +20,11 @@ dependencies {
 }
 
 // Cucumber report
-cucumberReports {
-    outputDir = file('build/reports/cucumber/html')
-    buildId = '1'
-    reports = files('build/reports/cucumber/cucumber.json')
-}
+//cucumberReports {
+  //  outputDir = file('build/reports/cucumber/html')
+    //buildId = '1'
+    //reports = files('build/reports/cucumber/cucumber.json')
+//}
 
 // Jacoco
 jacoco {

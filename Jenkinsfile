@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'windows' }
 
     tools {
         jdk 'java11'
@@ -9,10 +9,7 @@ pipeline {
 
         stage('Debug Java') {
             steps {
-                bat '''
-                java -version
-                echo JAVA_HOME=%JAVA_HOME%
-                '''
+                bat 'java -version && echo JAVA_HOME=%JAVA_HOME%'
             }
         }
 
