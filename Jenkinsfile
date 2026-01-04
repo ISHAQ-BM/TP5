@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        jdk 'java11-latest'
+        jdk 'java11'
     }
     environment {
         JAVA_HOME = tool 'java11'
