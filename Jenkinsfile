@@ -40,11 +40,7 @@ pipeline {
                     }
                     post {
                         always {
-                            // استخدام النجمة المزدوجة لضمان عثور Jenkins على الملفات في أي مكان بالـ build
-                            junit '**/build/test-results/test/*.xml'
-
-                            // اختيارياً: أرشفة تقارير Cucumber JSON إذا كنت تستخدم إضافة Cucumber Reports
-                            archiveArtifacts artifacts: '**/build/reports/jacoco/test/*.xml', allowEmptyArchive: true
+                            junit 'build/test-results/test/*.xml'
                         }
                     }
                 }

@@ -54,10 +54,22 @@ sonar {
 
 // إعدادات الاختبار لإنتاج ملف JSON الخاص بـ Cucumber
 test {
-    useJUnit() // التأكد من استخدام JUnit 4
+    useJUnit() // JUnit 4
+
+    // Enable reports the Gradle 8+ way
+    reports {
+        junitXml.required.set(true)
+        html.required.set(true)
+    }
+
+    // Optional: Cucumber JSON report
     systemProperty "cucumber.options", "--plugin json:build/reports/cucumber/cucumber.json"
-    finalizedBy jacocoTestReport // تشغيل Jacoco تلقائياً بعد الاختبار
+
+    // Run Jacoco after tests
+    finalizedBy jacocoTestReport
 }
+
+
 
 // إعدادات النشر إلى MyMavenRepo (مطلوبة في مرحلة Deploy)
 publishing {
