@@ -14,8 +14,8 @@ repositories {
 
 dependencies {
     // Cucumber & JUnit
-    testImplementation 'io.cucumber:cucumber-java:6.0.0'
-    testImplementation 'io.cucumber:cucumber-junit:6.0.0'
+    //testImplementation 'io.cucumber:cucumber-java:6.0.0'
+    //testImplementation 'io.cucumber:cucumber-junit:6.0.0'
     testImplementation 'junit:junit:4.12'
 }
 
@@ -51,9 +51,9 @@ tasks.named('sonarqube') {
 }
 
 // Gradle test configuration
-test {
-    systemProperty "cucumber.plugin", "pretty, json:build/reports/cucumber/cucumber.json"
-}
+//test {
+  //  systemProperty "cucumber.plugin", "pretty, json:build/reports/cucumber/cucumber.json"
+//}
 
 // Maven publishing
 publishing {
