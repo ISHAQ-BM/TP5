@@ -2,14 +2,21 @@ pipeline {
     agent any
 
     tools {
-        jdk 'java11'
+        jdk 'java11' 
+    }
+
+    environment {
+        JAVA_HOME = tool 'java11'
+        PATH = "${env.JAVA_HOME}\\bin;${env.PATH}"
     }
 
     stages {
-
         stage('Debug Java') {
             steps {
-                bat 'java -version && echo JAVA_HOME=%JAVA_HOME%'
+                bat '''
+                java -version
+                echo JAVA_HOME=%JAVA_HOME%
+                '''
             }
         }
 
@@ -21,17 +28,14 @@ pipeline {
 
         stage('Test') {
             steps {
-                bat 'gradlew.bat test cucumber'
+                bat 'gradlew.bat test'  // Only 'test', no separate cucumber task
+                junit '**/build/test-results/test/*.xml'
             }
         }
 
         stage('Code Analysis') {
-            environment {
-                JAVA_HOME = tool 'java11'
-                PATH = "${env.JAVA_HOME}\\bin;${env.PATH}"
-            }
             steps {
-                withSonarQubeEnv('SonarQube') {
+                withSonarQubeEnv('SonarQube') { // Replace with your SonarQube server name
                     bat 'gradlew.bat sonarqube'
                 }
             }
@@ -40,6 +44,12 @@ pipeline {
         stage('Build') {
             steps {
                 bat 'gradlew.bat build'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                bat 'gradlew.bat publish'
             }
         }
     }
