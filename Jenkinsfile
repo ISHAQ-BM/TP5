@@ -34,24 +34,29 @@ pipeline {
         }
 
         stage('Test') {
-            steps {
-                bat 'gradlew.bat test jacocoTestReport'
-            }
-            post {
-                always {
-                    // المسار الصحيح لنتائج اختبارات Gradle
-                    junit 'build/test-results/test/*.xml'
-                }
-            }
-        }
+                    steps {
+                        // استخدام --rerun-tasks لضمان توليد ملفات الـ XML في كل مرة
+                        bat 'gradlew.bat clean test jacocoTestReport --rerun-tasks'
+                    }
+                    post {
+                        always {
+                            // استخدام النجمة المزدوجة لضمان عثور Jenkins على الملفات في أي مكان بالـ build
+                            junit '**/build/test-results/test/*.xml'
 
-        stage('Code Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') { // Replace with your SonarQube server name
-                    bat 'gradlew.bat sonarqube'
+                            // اختيارياً: أرشفة تقارير Cucumber JSON إذا كنت تستخدم إضافة Cucumber Reports
+                            archiveArtifacts artifacts: '**/build/reports/jacoco/test/*.xml', allowEmptyArchive: true
+                        }
+                    }
                 }
-            }
-        }
+
+                stage('Code Analysis') {
+                    steps {
+                        // تأكد أن اسم 'SonarQube' يطابق الاسم المعرف في Jenkins -> Manage Jenkins -> System
+                        withSonarQubeEnv('SonarQube') {
+                            bat 'gradlew.bat sonar'
+                        }
+                    }
+                }
 
         stage('Build') {
             steps {
