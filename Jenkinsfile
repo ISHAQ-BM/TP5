@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        jdk 'Java11' // adjust to your Jenkins JDK name
+        jdk 'java11' // adjust to your Jenkins JDK name
     }
 
     stages {
