@@ -19,9 +19,17 @@ pipeline {
             }
         }
 
-        stage('Checkout') {
+        stage('Checkout SCM') {
             steps {
-                checkout scm
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [
+                        [$class: 'CheckoutOption', timeout: 30], // زيادة وقت الانتظار لـ 30 دقيقة
+                        [$class: 'CloneOption', timeout: 30, shallow: true, noTags: true] // سحب آخر نسخة فقط لتقليل الحجم
+                    ],
+                    userRemoteConfigs: [[url: 'https://github.com/ISHAQ-BM/TP5', credentialsId: 'github_token']]
+                ])
             }
         }
 
