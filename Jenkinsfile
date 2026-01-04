@@ -2,10 +2,20 @@ pipeline {
     agent any
 
     tools {
-        jdk 'java11' // adjust to your Jenkins JDK name
+        jdk 'java11'
     }
 
     stages {
+
+        stage('Debug Java') {
+            steps {
+                bat '''
+                java -version
+                echo JAVA_HOME=%JAVA_HOME%
+                '''
+            }
+        }
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -14,38 +24,25 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh './gradlew test cucumber'
-                junit '**/build/test-results/test/*.xml'
+                bat 'gradlew.bat test cucumber'
             }
         }
 
         stage('Code Analysis') {
-            steps {
-                sh './gradlew sonarqube'
+            environment {
+                JAVA_HOME = tool 'java11'
+                PATH = "${env.JAVA_HOME}\\bin;${env.PATH}"
             }
-        }
-
-        stage('Code Quality') {
             steps {
-                script {
-                    def qg = waitForQualityGate()
-                    if (qg.status != 'OK') {
-                        error "Quality Gate failed"
-                    }
+                withSonarQubeEnv('SonarQube') {
+                    bat 'gradlew.bat sonarqube'
                 }
             }
         }
 
         stage('Build') {
             steps {
-                sh './gradlew build javadoc'
-                archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                sh './gradlew publish'
+                bat 'gradlew.bat build'
             }
         }
     }
