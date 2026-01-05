@@ -1,7 +1,6 @@
 plugins {
     id 'java'
     id 'jacoco'
-    // أعد تفعيل السونار لأنه مطلوب في الـ TP
     id 'org.sonarqube' version '4.4.1.3373'
     id 'maven-publish'
 }
@@ -11,62 +10,58 @@ version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
-    gradlePluginPortal()
 }
+
 dependencies {
-    // مكتبات Cucumber الأساسية (تم تصحيح الإصدارات)
-    // بدلاً من التحميل من الإنترنت، نستخدم الملف المحلي
+    // Cucumber local libs
     testImplementation files('libs/cucumber-java-6.0.0.jar')
     testImplementation files('libs/cucumber-junit-6.0.0.jar')
     testImplementation files('libs/datatable-3.3.1.jar')
     testImplementation files('libs/cucumber-core-6.0.0.jar')
     testImplementation files('libs/cucumber-gherkin-6.0.0.jar')
     testImplementation files('libs/cucumber-expressions-10.2.0.jar')
-
-    // JUnit ضروري جداً لتشغيل الاختبارات
     testImplementation 'junit:junit:4.13.2'
-
 }
+
+// Phase Build: Génération de la documentation
 java {
     withJavadocJar()
 }
-// إعدادات Jacoco (مطلوب لتقارير تغطية الكود في Sonar)
+
 jacoco {
     toolVersion = "0.8.12"
 }
 
+test {
+    useJUnit()
+    reports {
+        // Correction cruciale: force la génération des XML pour Jenkins
+        junitXml.required = true
+        html.required = true
+    }
+    // Phase Test: Génération des rapports Cucumber
+    systemProperty "cucumber.plugin", "pretty, html:build/reports/cucumber.html, json:build/reports/cucumber.json"
+    outputs.upToDateWhen { false }
+}
 
-
-// إعدادات SonarQube (أعد تفعيلها لربطها بـ Jenkins)
 sonar {
     properties {
         property "sonar.host.url", "http://localhost:9000"
         property "sonar.projectKey", "TP5"
         property "sonar.projectName", "TP5"
-        // إخبار سونار بمكان تقارير Jacoco
         property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
     }
 }
 
-// إعدادات الاختبار لإنتاج ملف JSON الخاص بـ Cucumber
-
-
 jacocoTestReport {
     dependsOn test
     reports {
-        xml.required = true // ضروري جداً لـ SonarQube
+        xml.required = true
         html.required = true
     }
 }
 
-test {
-    // إجبار توليد التقارير في كل بناء
-    systemProperty "cucumber.plugin",
-            "pretty, html:build/reports/cucumber.html, json:build/reports/cucumber.json"
-    outputs.upToDateWhen { false }
-}
-
-// إعدادات النشر إلى MyMavenRepo (مطلوبة في مرحلة Deploy)
+// Phase Deploy: Publication vers MyMavenRepo
 publishing {
     publications {
         maven(MavenPublication) {
@@ -78,7 +73,6 @@ publishing {
     }
     repositories {
         maven {
-            // ملاحظة: تأكد أن الرابط يبدأ بـ https إذا كان يدعمه، أو ابقه هكذا مع السماح بالبروتوكول غير الآمن
             url "https://mymavenrepo.com/repo/cEmjfkxugPlzLxXg1A2B/"
             credentials {
                 username = "myMavenRepo"
