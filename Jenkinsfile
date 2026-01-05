@@ -34,17 +34,16 @@ pipeline {
         }
 
         stage('Test') {
-                    steps {
-                        // استخدام --rerun-tasks لضمان توليد ملفات الـ XML في كل مرة
-                        bat 'gradlew.bat clean test jacocoTestReport --rerun-tasks'
-                    }
-                    post {
-                        always {
-                            // العلامة **/ تعني ابحث في كل المجلدات الفرعية داخل الـ Workspace
-                           junit testResults: '**/build/test-results/test/*.xml', allowEmptyResults: true
-                        }
-                    }
+            steps {
+                bat 'gradlew.bat clean test jacocoTestReport --rerun-tasks'
+            }
+            post {
+                always {
+                    junit testResults: '**/build/test-results/test/*.xml', allowEmptyResults: false
+                    archiveArtifacts artifacts: 'build/reports/**', fingerprint: true
                 }
+            }
+        }
 
                 stage('Code Analysis') {
                     steps {
@@ -54,12 +53,25 @@ pipeline {
                         }
                     }
                 }
+                stage('Code Quality') {
+                    steps {
+                        timeout(time: 1, unit: 'MINUTES') {
+                            waitForQualityGate abortPipeline: true
+                        }
+                    }
+                }
 
         stage('Build') {
             steps {
-                bat 'gradlew.bat build'
+                bat 'gradlew.bat build javadoc'
+            }
+            post {
+                success {
+                    archiveArtifacts artifacts: 'build/libs/*.jar, build/docs/javadoc/**', fingerprint: true
+                }
             }
         }
+
 
         stage('Deploy') {
             steps {
@@ -67,4 +79,18 @@ pipeline {
             }
         }
     }
+
+    post {
+        success {
+            mail to: 'isaacbelhadjmehdi@gmail.com',
+                 subject: "SUCCESS - ${env.JOB_NAME}",
+                 body: "Le déploiement du projet a été effectué avec succès."
+        }
+        failure {
+            mail to: 'isaacbelhadjmehdi@gmail.com',
+                 subject: "FAILURE - ${env.JOB_NAME}",
+                 body: "Le pipeline Jenkins a échoué."
+        }
+    }
+
 }
