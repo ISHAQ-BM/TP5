@@ -22,13 +22,13 @@ pipeline {
 
         stage('Test') {
             steps {
-                // 1. Lancement des tests unitaires
+                // Phase 2.1: Launch tests and generate coverage
                 bat 'gradlew.bat clean test jacocoTestReport --rerun-tasks'
             }
             post {
                 always {
-                    // 2. Archivage des résultats et 3. Rapports Cucumber
-                    junit testResults: 'build/test-results/test/*.xml', allowEmptyResults: true
+                    // Phase 2.1: Archive results using a recursive pattern to find XMLs
+                    junit testResults: 'build/test-results/**/*.xml', allowEmptyResults: true
                     archiveArtifacts artifacts: 'build/reports/**', allowEmptyArchive: true
                 }
             }
@@ -36,7 +36,7 @@ pipeline {
 
         stage('Code Analysis') {
             steps {
-                // Analyse SonarQube
+                // Phase 2.2: SonarQube analysis
                 withSonarQubeEnv('SonarQube') {
                     bat 'gradlew.bat sonar'
                 }
@@ -45,7 +45,7 @@ pipeline {
 
         stage('Code Quality') {
             steps {
-                // Vérification de l'état de Quality Gates
+                // Phase 2.3: Verify Quality Gate status
                 timeout(time: 5, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
@@ -54,12 +54,12 @@ pipeline {
 
         stage('Build') {
             steps {
-                // 1. Génération Jar et 2. Génération Documentation
+                // Phase 2.4: Generate Jar and Javadoc
                 bat 'gradlew.bat jar javadoc'
             }
             post {
                 success {
-                    // 3. Archivage du fichier Jar et de la documentation
+                    // Phase 2.4: Archive Jar and Javadoc
                     archiveArtifacts artifacts: 'build/libs/*.jar, build/docs/javadoc/**', fingerprint: true
                 }
             }
@@ -67,23 +67,23 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                // Déploiement réussi vers MyMavenRepo
+                // Phase 2.5: Deploy to MyMavenRepo
                 bat 'gradlew.bat publish'
             }
         }
     }
 
     post {
-        // Notifications par mail
+        // Phase 2.6: Notifications
         success {
             mail to: 'isaacbelhadjmehdi@gmail.com',
-                 subject: "SUCCESS - ${env.JOB_NAME} Build #${env.BUILD_NUMBER}",
-                 body: "Le déploiement a été effectué avec succès."
+                 subject: "SUCCESS - ${env.JOB_NAME}",
+                 body: "Project deployed successfully to MyMavenRepo."
         }
         failure {
             mail to: 'isaacbelhadjmehdi@gmail.com',
-                 subject: "FAILURE - ${env.JOB_NAME} Build #${env.BUILD_NUMBER}",
-                 body: "Le pipeline a échoué. Veuillez vérifier les logs."
+                 subject: "FAILURE - ${env.JOB_NAME}",
+                 body: "The pipeline failed. Please check the Jenkins logs."
         }
     }
 }

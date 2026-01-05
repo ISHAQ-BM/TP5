@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    // Cucumber local libs
+    // Local Cucumber dependencies
     testImplementation files('libs/cucumber-java-6.0.0.jar')
     testImplementation files('libs/cucumber-junit-6.0.0.jar')
     testImplementation files('libs/datatable-3.3.1.jar')
@@ -23,9 +23,8 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 }
 
-// Phase Build: Génération de la documentation
 java {
-    withJavadocJar()
+    withJavadocJar() // Requirement 2.4: Generate documentation
 }
 
 jacoco {
@@ -35,33 +34,28 @@ jacoco {
 test {
     useJUnit()
     reports {
-        // Correction cruciale: force la génération des XML pour Jenkins
-        junitXml.required = true
+        junitXml.required = true // Requirement 2.1: Archive unit test results
         html.required = true
     }
-    // Phase Test: Génération des rapports Cucumber
+    // Requirement 2.1: Cucumber test report generation
     systemProperty "cucumber.plugin", "pretty, html:build/reports/cucumber.html, json:build/reports/cucumber.json"
-    outputs.upToDateWhen { false }
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true // Crucial for SonarQube coverage
+    }
 }
 
 sonar {
     properties {
         property "sonar.host.url", "http://localhost:9000"
         property "sonar.projectKey", "TP5"
-        property "sonar.projectName", "TP5"
         property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
     }
 }
 
-jacocoTestReport {
-    dependsOn test
-    reports {
-        xml.required = true
-        html.required = true
-    }
-}
-
-// Phase Deploy: Publication vers MyMavenRepo
 publishing {
     publications {
         maven(MavenPublication) {
