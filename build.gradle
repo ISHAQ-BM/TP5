@@ -13,7 +13,6 @@ repositories {
 }
 
 dependencies {
-    // Local Cucumber dependencies
     testImplementation files('libs/cucumber-java-6.0.0.jar')
     testImplementation files('libs/cucumber-junit-6.0.0.jar')
     testImplementation files('libs/datatable-3.3.1.jar')
@@ -23,28 +22,25 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 }
 
-java {
-    withJavadocJar() // Requirement 2.4: Generate documentation
-}
+java { withJavadocJar() }
 
-jacoco {
-    toolVersion = "0.8.12"
-}
+jacoco { toolVersion = "0.8.12" }
 
 test {
     useJUnit()
+    finalizedBy jacocoTestReport // Force Jacoco to run after tests
     reports {
-        junitXml.required = true // Requirement 2.1: Archive unit test results
+        junitXml.required = true
         html.required = true
     }
-    // Requirement 2.1: Cucumber test report generation
-    systemProperty "cucumber.plugin", "pretty, html:build/reports/cucumber.html, json:build/reports/cucumber.json"
 }
 
 jacocoTestReport {
     dependsOn test
     reports {
-        xml.required = true // Crucial for SonarQube coverage
+        xml.required = true
+        html.required = true
+        xml.destination file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
     }
 }
 
