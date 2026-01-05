@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'org.sonarqube' version '4.4.1.3373'
+    id 'com.github.spacialcircumstances.gradle-cucumber-reporting' version '0.1.23'
     id 'maven-publish'
 }
 
@@ -19,6 +20,9 @@ dependencies {
     testImplementation files('libs/cucumber-core-6.0.0.jar')
     testImplementation files('libs/cucumber-gherkin-6.0.0.jar')
     testImplementation files('libs/cucumber-expressions-10.2.0.jar')
+    testImplementation 'org.apiguardian:apiguardian-api:1.1.2'
+    testImplementation 'io.cucumber:cucumber-junit:6.10.4'
+    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.10.0'
     testImplementation 'junit:junit:4.13.2'
 }
 
@@ -28,11 +32,8 @@ jacoco { toolVersion = "0.8.12" }
 
 test {
     useJUnit()
-    finalizedBy jacocoTestReport // Force Jacoco to run after tests
-    reports {
-        junitXml.required = true
-        html.required = true
-    }
+    outputs.upToDateWhen { false }
+    finalizedBy jacocoTestReport
 }
 
 jacocoTestReport {
@@ -40,8 +41,12 @@ jacocoTestReport {
     reports {
         xml.required = true
         html.required = true
-        xml.destination file("build/reports/jacoco/test/jacocoTestReport.xml")
     }
+}
+
+cucumberReports {
+    outputDir = file('build/reports/cucumber')
+    reports = files('reports/example-report.json')
 }
 
 sonar {
