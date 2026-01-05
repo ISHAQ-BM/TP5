@@ -17,6 +17,7 @@ pipeline {
             }
             post {
                 always {
+                    // Use a very broad pattern to ensure Jenkins finds the XMLs
                     junit testResults: '**/build/test-results/**/*.xml', allowEmptyResults: true
                     archiveArtifacts artifacts: 'build/reports/**', allowEmptyArchive: true
                 }
@@ -25,13 +26,13 @@ pipeline {
         stage('Code Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    bat 'gradlew.bat sonar -Dsonar.branch.name=main'
+                    bat 'gradlew.bat sonar'
                 }
             }
         }
         stage('Code Quality') {
             steps {
-                timeout(time: 10, unit: 'MINUTES') {
+                timeout(time: 5, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }

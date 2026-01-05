@@ -28,7 +28,7 @@ jacoco { toolVersion = "0.8.12" }
 
 test {
     useJUnit()
-    finalizedBy jacocoTestReport
+    finalizedBy jacocoTestReport // Force Jacoco to run after tests
     reports {
         junitXml.required = true
         html.required = true
@@ -40,7 +40,7 @@ jacocoTestReport {
     reports {
         xml.required = true
         html.required = true
-        xml.outputLocation = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+        xml.destination file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
     }
 }
 
@@ -48,8 +48,6 @@ sonar {
     properties {
         property "sonar.host.url", "http://localhost:9000"
         property "sonar.projectKey", "TP5"
-        property "sonar.projectName", "TP5"
-        property "sonar.branch.name", "main"
         property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
     }
 }
