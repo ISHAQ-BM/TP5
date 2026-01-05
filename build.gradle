@@ -40,7 +40,7 @@ jacocoTestReport {
     reports {
         xml.required = true
         html.required = true
-        xml.destination file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+        xml.destination file("build/reports/jacoco/test/jacocoTestReport.xml")
     }
 }
 
@@ -48,9 +48,7 @@ sonar {
     properties {
         property "sonar.host.url", "http://localhost:9000"
         property "sonar.projectKey", "TP5"
-        property "sonar.projectName", "TP5"
-        property "sonar.branch.name", "main"
-        property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+        property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
     }
 }
 
