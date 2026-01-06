@@ -11,18 +11,28 @@ pipeline {
                 checkout scm
             }
         }
+
         stage('Test') {
             steps {
                 bat 'gradlew.bat clean test jacocoTestReport --rerun-tasks'
             }
             post {
                 always {
-                    // Use a very broad pattern to ensure Jenkins finds the XMLs
                     junit testResults: '**/build/test-results/**/*.xml', allowEmptyResults: true
+
+                    // ✅ AJOUTEZ CECI pour voir la couverture de code
+                    jacoco(
+                        execPattern: '**/build/jacoco/*.exec',
+                        classPattern: '**/build/classes',
+                        sourcePattern: '**/src/main/java',
+                        exclusionPattern: '**/*Test*.class'
+                    )
+
                     archiveArtifacts artifacts: 'build/reports/**', allowEmptyArchive: true
                 }
             }
         }
+       
         stage('Code Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
