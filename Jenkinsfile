@@ -64,6 +64,24 @@ pipeline {
         }
     }
     post {
+    success {
+                echo "Pipeline réussi ! Envoi de la notification de succès..."
+                mail to: 'isaacbelhadjmehdi@gmail.com',
+                     subject: "SUCCESS: Pipeline ${env.JOB_NAME} [Build #${env.BUILD_NUMBER}]",
+                     body: """Félicitations !
+                             Le déploiement de l'API TP5 a été effectué avec succès sur MyMavenRepo.
+                             Détails du build : ${env.BUILD_URL}
+                             Statut : SUCCESS"""
+            }
+            failure {
+                echo "Pipeline échoué. Envoi de l'alerte..."
+                mail to: 'isaacbelhadjmehdi@gmail.com',
+                     subject: "FAILURE: Pipeline ${env.JOB_NAME} [Build #${env.BUILD_NUMBER}]",
+                     body: """Attention !
+                             Le pipeline a échoué. Veuillez vérifier les logs Jenkins pour corriger l'erreur.
+                             Lien vers le build : ${env.BUILD_URL}
+                             Statut : FAILED"""
+            }
         always {
             junit testResults: '**/build/test-results/**/*.xml', allowEmptyResults: true
 
@@ -86,6 +104,6 @@ pipeline {
 
             archiveArtifacts artifacts: 'build/reports/**', allowEmptyArchive: true
         }
-        
+
     }
 }
