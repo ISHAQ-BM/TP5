@@ -32,7 +32,7 @@ pipeline {
                 }
             }
         }
-       
+
         stage('Code Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
@@ -64,9 +64,27 @@ pipeline {
         }
     }
     post {
-        success {
-            echo "Pipeline finished successfully!"
-            // mail to: 'isaacbelhadjmehdi@gmail.com', subject: "SUCCESS", body: "TP5 Deployed"
+        always {
+            junit testResults: '**/build/test-results/**/*.xml', allowEmptyResults: true
+
+            // ✅ MAINTENANT vous pouvez utiliser jacoco()
+            jacoco(
+                execPattern: '**/build/jacoco/*.exec',
+                classPattern: '**/build/classes',
+                sourcePattern: '**/src/main/java',
+                exclusionPattern: '**/*Test*.class'
+            )
+
+            publishHTML(target: [
+                allowMissing: false,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'build/reports/cucumber/cucumber-html-reports',
+                reportFiles: 'overview-features.html',
+                reportName: 'Cucumber Report'
+            ])
+
+            archiveArtifacts artifacts: 'build/reports/**', allowEmptyArchive: true
         }
     }
 }
