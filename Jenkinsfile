@@ -4,7 +4,6 @@ pipeline {
     environment {
         JAVA_HOME = tool 'java11'
         PATH = "${env.JAVA_HOME}\\bin;${env.PATH}"
-        EMAIL_RECIPIENTS = 'isaacbelhadjmehdi@gmail.com'
     }
     stages {
         stage('Checkout') {
@@ -48,7 +47,6 @@ pipeline {
                         env.QUALITY_GATE_STATUS = qg.status
                         if (qg.status != 'OK') {
                             echo "Quality Gate failed: ${qg.status}"
-                            // Ne pas bloquer, mais noter l'échec
                         }
                     }
                 }
@@ -72,81 +70,121 @@ pipeline {
     }
     post {
         success {
-            script {
-                def qualityGateMsg = env.QUALITY_GATE_STATUS == 'OK' ? '✅ PASSED' : '⚠️ FAILED'
+            echo "Pipeline finished with status: SUCCESS"
+            echo "SonarQube Report: http://localhost:9000/dashboard?id=TP5"
 
-                emailext(
-                    subject: "✅ SUCCESS: Pipeline ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                    body: """
-                        <h2>✅ Build Successful!</h2>
-                        <p><strong>Project:</strong> ${env.JOB_NAME}</p>
-                        <p><strong>Build Number:</strong> ${env.BUILD_NUMBER}</p>
-                        <p><strong>Quality Gate:</strong> ${qualityGateMsg}</p>
+            mail to: 'isaacbelhadjmehdi@gmail.com',
+                 subject: "✅ SUCCESS: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
+                 body: """Build réussi!
 
-                        <h3>📊 Reports:</h3>
-                        <ul>
-                            <li><a href="${env.BUILD_URL}testReport">Test Results</a></li>
-                            <li><a href="${env.BUILD_URL}Cucumber_Report">Cucumber Report</a></li>
-                            <li><a href="http://localhost:9000/dashboard?id=TP5">SonarQube Analysis</a></li>
-                            <li><a href="${env.BUILD_URL}artifact/build/reports/jacoco/test/html/index.html">Code Coverage</a></li>
-                        </ul>
+Projet: ${env.JOB_NAME}
+Build: #${env.BUILD_NUMBER}
+Quality Gate: ${env.QUALITY_GATE_STATUS ?: 'N/A'}
+Durée: ${currentBuild.durationString}
 
-                        <p><strong>Duration:</strong> ${currentBuild.durationString}</p>
-                        <p><a href="${env.BUILD_URL}">View Full Build</a></p>
-                    """,
-                    to: "${EMAIL_RECIPIENTS}",
-                    mimeType: 'text/html'
-                )
-            }
+Voir les détails: ${env.BUILD_URL}
+SonarQube: http://localhost:9000/dashboard?id=TP5
+
+---
+Jenkins Automation"""
         }
         failure {
-            emailext(
-                subject: "❌ FAILURE: Pipeline ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """
-                    <h2>❌ Build Failed!</h2>
-                    <p><strong>Project:</strong> ${env.JOB_NAME}</p>
-                    <p><strong>Build Number:</strong> ${env.BUILD_NUMBER}</p>
-                    <p><strong>Status:</strong> FAILED</p>
+            echo "Pipeline finished with status: FAILURE"
 
-                    <h3>📋 Details:</h3>
-                    <p>The pipeline failed during execution. Please check the console output for details.</p>
+            mail to: 'isaacbelhadjmehdi@gmail.com',
+                 subject: "❌ FAILURE: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
+                 body: """Build échoué!
 
-                    <p><strong>Duration:</strong> ${currentBuild.durationString}</p>
-                    <p><a href="${env.BUILD_URL}console">View Console Output</a></p>
-                    <p><a href="${env.BUILD_URL}">View Full Build</a></p>
-                """,
-                to: "${EMAIL_RECIPIENTS}",
-                mimeType: 'text/html'
-            )
+Projet: ${env.JOB_NAME}
+Build: #${env.BUILD_NUMBER}
+Durée: ${currentBuild.durationString}
+
+Voir les logs: ${env.BUILD_URL}console
+
+---
+Jenkins Automation"""
         }
         unstable {
-            emailext(
-                subject: "⚠️ UNSTABLE: Pipeline ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """
-                    <h2>⚠️ Build Unstable!</h2>
-                    <p><strong>Project:</strong> ${env.JOB_NAME}</p>
-                    <p><strong>Build Number:</strong> ${env.BUILD_NUMBER}</p>
-                    <p><strong>Status:</strong> UNSTABLE</p>
+            echo "Pipeline finished with status: UNSTABLE"
 
-                    <h3>📋 Details:</h3>
-                    <p>The build completed but some tests failed or quality gates were not met.</p>
+            mail to: 'isaacbelhadjmehdi@gmail.com',
+                 subject: "⚠️ UNSTABLE: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
+                 body: """Build instable!
 
-                    <h3>📊 Reports:</h3>
-                    <ul>
-                        <li><a href="${env.BUILD_URL}testReport">Test Results</a></li>
-                        <li><a href="http://localhost:9000/dashboard?id=TP5">SonarQube Analysis</a></li>
-                    </ul>
+Projet: ${env.JOB_NAME}
+Build: #${env.BUILD_NUMBER}
+Durée: ${currentBuild.durationString}
 
-                    <p><strong>Duration:</strong> ${currentBuild.durationString}</p>
-                    <p><a href="${env.BUILD_URL}">View Full Build</a></p>
-                """,
-                to: "${EMAIL_RECIPIENTS}",
-                mimeType: 'text/html'
-            )
-        }
-        always {
-            echo "Pipeline finished with status: ${currentBuild.result}"
-            echo "SonarQube Report: http://localhost:9000/dashboard?id=TP5"
+Certains tests ont échoué ou le Quality Gate n'est pas passé.
+
+Voir les détails: ${env.BUILD_URL}
+
+---
+Jenkins Automation"""
         }
     }
 }
+```
+
+---
+
+## Configuration SMTP dans Jenkins (obligatoire):
+
+### **1. Configurez le serveur email:**
+
+**Manage Jenkins** → **Configure System** → Cherchez **"E-mail Notification"**
+
+#### **Pour Gmail:**
+```
+SMTP server: smtp.gmail.com
+```
+
+Cliquez sur **Advanced**:
+```
+☑ Use SMTP Authentication
+User Name: votre-email@gmail.com
+Password: [votre mot de passe d'application]
+☑ Use SSL
+SMTP Port: 465
+```
+
+**OU** avec TLS:
+```
+☑ Use SMTP Authentication
+User Name: votre-email@gmail.com
+Password: [votre mot de passe d'application]
+☑ Use TLS
+SMTP Port: 587
+```
+
+#### **Mot de passe d'application Gmail:**
+1. Allez sur: https://myaccount.google.com/apppasswords
+2. Créez un nouveau mot de passe d'application
+3. Utilisez ce mot de passe (pas votre mot de passe Gmail normal)
+
+---
+
+### **2. Testez la configuration:**
+
+Dans la même page, en bas:
+
+**Test configuration by sending test e-mail**
+- Entrez: `isaacbelhadjmehdi@gmail.com`
+- Cliquez sur **"Test configuration"**
+
+Vous devriez recevoir un email de test.
+
+---
+
+## Autres providers SMTP:
+
+**Outlook/Hotmail:**
+```
+SMTP: smtp-mail.outlook.com
+Port: 587 (TLS)
+```
+
+**Yahoo:**
+```
+SMTP: smtp.mail.yahoo.com
+Port: 587 (TLS)
